@@ -1,7 +1,7 @@
 import java.io.File;
 import java.io.IOException;
 
-public class Archivos {
+public class Ficheros {
 
     public static void main(String[] args) throws IOException {
         /* APUNTES DE PERSONALES DEL EJERCICIO PARA JOAN
@@ -22,11 +22,8 @@ public class Archivos {
         File arch2 = new File(dir2,"File2.txt");
         File arch3 = new File(dir2,"File3.txt");
 
-        //Creacion de Arrays para los archivos y directorios
-
-
         //Creacion de archivos y directorios
-        dir1.mkdir();
+        dir1.mkdirs();
         dir2.mkdir();
         dir3.mkdirs();
         arch1.createNewFile();
@@ -36,28 +33,34 @@ public class Archivos {
         System.out.println("arch1.txt: "+arch1.exists());
         System.out.println("arch3.txt: "+arch3.exists());
 
-        File[] ficheros = {dir1,dir2,dir3,arch1,arch2,arch3};
+        //Creacion de Arrays para los archivos y directorios
+        File[] ficheros = {dir1, dir2, dir3, arch1, arch2, arch3};
 
-        System.out.println("+--------------------------------------------------------------------------------------------------------------+");
-        System.out.printf("|%10s    |%10s    |%12s    |%7s    |%29s \n","Nombre","Archivo","Directorio","Oculto","Directorio Padre                             ");
-        System.out.println("+--------------------------------------------------------------------------------------------------------------+");
-        System.out.printf("|%12s  |%7b |%7b |%7b |%10s \n",arch1.getName(),arch1.isFile(),arch1.isDirectory(),arch1.isHidden(),arch1.getParent().substring(45));
-        System.out.println("+--------------------------------------------------------------------------------------------------------------+");
-        System.out.printf("|%12s |%7b |%7b |%7b |%12s \n",arch2.getName(),arch2.isFile(),arch2.isDirectory(),arch2.isHidden(),arch2.getParent().substring(0));
-        System.out.println("+--------------------------------------------------------------------------------------------------------------+");
-        System.out.println("| Archivo o Directorio  | Lectura | Escritura | Ejecución |");
-        System.out.println("+---------------------------------------------------------+");
-        System.out.println(" |"+dir1.getName()+"|"+dir1.canRead()+"|"+dir1.canWrite()+"|"+dir1.canExecute());
-        System.out.println("+---------------------------------------------------------+");
-        System.out.println(" |"+dir2.getName()+"|"+dir2.canRead()+"|"+dir2.canWrite()+"|"+dir2.canExecute());
-        System.out.println("+---------------------------------------------------------+");
-        System.out.println(" |"+dir3.getName()+"|"+dir3.canRead()+"|"+dir3.canWrite()+"|"+dir3.canExecute());
-        System.out.println("+---------------------------------------------------------+");
-        System.out.println(" |"+arch1.getName()+"|"+arch1.canRead()+"|"+arch1.canWrite()+"|"+arch1.canExecute());
-        System.out.println("+---------------------------------------------------------+");
-        System.out.println(" |"+arch2.getName()+"|"+arch2.canRead()+"|"+arch2.canWrite()+"|"+arch2.canExecute());
-        System.out.println("+---------------------------------------------------------+");
+        //Ahora se mostrará en una tabla cada uno de los archivos y ficheros con sus características
+        //Ojo algunos directorios tendrán como directorio padre null porque no se ha especificado en el constructor
 
+        System.out.println("+--------------------------------------------------------------------------------+");
+        System.out.printf("|%10s %4s %7s %s %10s %s %5s %s %7s %s %6s %s %s %s %n",
+                "Nombre","|","Archivo","|","Directorio","|","Lectura","|",
+                "Escritura", "|","Ejecución","|","Oculto","|");
+
+        for (File f:ficheros) {
+            System.out.println("+--------------------------------------------------------------------------------+");
+            System.out.printf("|%12s %2s %6b %2s %7b %4s %5b %3s %6b %4s %7b %3s %5b %2s %n",
+                    f.getName(),"|",f.isFile(),"|",f.isDirectory(),"|",f.canRead(),"|",
+                    f.canWrite(),"|",f.canExecute(),"|",f.isHidden(),"|");
+        }
+        System.out.println("+--------------------------------------------------------------------------------+\n");
+
+
+        //Ahora se mostrarán cada uno de los directorios padre de cada archivo y directorio
+        System.out.println("+--------------------------------------------------------------------------------+");
+        System.out.println("|   Nombre       "+"|"+"   Directorio Padre"+"                                            |");
+        System.out.println("+--------------------------------------------------------------------------------+");
+        for (File f:ficheros) {
+            System.out.println("|  "+f.getName()+"    |   "+f.getParent());
+            System.out.println("+------------------------------------------------------------------------------+");
+        }
         //
 
     }
