@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/01FaresEndong/01FaresEndong.iml" filepath="$PROJECT_DIR$/01FaresEndong/01FaresEndong.iml" />
+      <module fileurl="file://$PROJECT_DIR$/02.1FaresEndong/02.1FaresEndong.iml" filepath="$PROJECT_DIR$/02.1FaresEndong/02.1FaresEndong.iml" />
+      <module fileurl="file://$PROJECT_DIR$/02.2FaresEndong/02.2FaresEndong.iml" filepath="$PROJECT_DIR$/02.2FaresEndong/02.2FaresEndong.iml" />
+      <module fileurl="file://$PROJECT_DIR$/02.3FaresEndong/02.3FaresEndong.iml" filepath="$PROJECT_DIR$/02.3FaresEndong/02.3FaresEndong.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/AccesoDatos.iml" filepath="$PROJECT_DIR$/.idea/AccesoDatos.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Binarios/Binarios.iml" filepath="$PROJECT_DIR$/Binarios/Binarios.iml" />
+    </modules>
+  </component>
+</project>

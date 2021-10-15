@@ -17,12 +17,8 @@ public class Ruta {
             //Llamamos a la función para que pida al usuario la ruta del fichero y lo almacene en "ruta"
             String ruta = introRuta();
 
-            //Creamos el objeto de escritura
-            FileWriter fw = new FileWriter(ruta);
-
-            //Escribimos en el fichero y lo cerramos
-            fw.write(JOptionPane.showInputDialog("Introduce el texto que quieras"));
-            fw.close();
+            //Escribimos en el fichero
+            escribirFichero(ruta);
 
            //mostramos el contenido
             mostrarContenido(ruta);
@@ -64,5 +60,20 @@ public class Ruta {
 
         fr.close();
 
+    }
+
+    public static void escribirFichero(String ruta) {
+
+        try {
+            //Creamos el objeto de escritura
+            FileWriter fw = new FileWriter(ruta);
+
+            //Escribimos en el fichero y lo cerramos
+            fw.write(JOptionPane.showInputDialog("Introduce el texto que quieras"));
+            fw.close();
+
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(null,e.getLocalizedMessage());
+        }
     }
 }

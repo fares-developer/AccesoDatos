@@ -45,9 +45,7 @@ public class Principal {
             File f2 = new File(ruta2);
 
             //Esta instancia pertenece al fichero que se creará a partir de el nombre de otros dos existentes
-            File f3 = new File(ruta_fichero+File.separator+
-                    f1.getName().substring(0, (f1.getName().length()-4))+"_"+
-                    f2.getName().substring(0, (f2.getName().length()-4))+".txt");
+            File f3 = new File(crearFicheroCombinado(ruta_fichero,f1,f2));
 
             if (f3.exists() == false) {//Comprobamos si el fichero existe antes de crearlo
                 //Como el fichero todavía no existe, lo inicializamos y lo creamos llamando al método escribirFichero
@@ -73,26 +71,40 @@ public class Principal {
     //Este metodo escrisbe en el fichero leyendo los dos ficheros seleccionados por el usuario
     public static void escribirFichero(File f1, File f2,BufferedWriter FN) throws IOException {
 
-        // Instanciamos los objetos que utilizaremos para leer los dos ficheros
-        BufferedReader fr1 = new BufferedReader(new FileReader(f1));
-        BufferedReader fr2 = new BufferedReader(new FileReader(f2));
+        try ( // Instanciamos los objetos que utilizaremos para leer los dos ficheros
+              BufferedReader fr1 = new BufferedReader(new FileReader(f1));
+              BufferedReader fr2 = new BufferedReader(new FileReader(f2))){
 
-        //Llamamos al metodo leeFichero para que lea el fichero y le pasamos un objeto de lectura y otro de escritura
-        leerFichero(fr1,FN);
-        leerFichero(fr2,FN);
+            //Llamamos al metodo leeFichero para que lea el fichero y le pasamos un objeto de lectura y otro de escritura
+            leerFichero(fr1,FN);
+            leerFichero(fr2,FN);
+
+        } catch (IOException e) {
+            JOptionPane.showInputDialog(e.getLocalizedMessage());
+        }
     }
 
     //Este método lee el fichero que le pasemos y lo escribe en otro
     public static void leerFichero(BufferedReader r, BufferedWriter w) throws IOException {
 
-        String valor = r.readLine();//Creamos una variable que recibirá cada una línea del fichero que estamos leyendo
-        while (valor != null) {//La función readLine() devuelve null cuando ha terminado de leer el fichero
+        try {
+            String valor = r.readLine();//Creamos una variable que recibirá cada una línea del fichero que estamos leyendo
+            while (valor != null) {//La función readLine() devuelve null cuando ha terminado de leer el fichero
 
-            w.write(valor + " ");
-            w.newLine();
-            valor = r.readLine();
+                w.write(valor + " ");
+                w.newLine();
+                valor = r.readLine();
+            }
+            w.flush();//Guardamos los cambios
+        } catch (IOException e) {
+            JOptionPane.showInputDialog(e.getLocalizedMessage());
         }
-        w.flush();//Guardamos los cambios
+    }
+
+    //Con esta funcion creamos un fichero nuevo a partir los nombre de dos ficheros que le pasemos
+    public static String crearFicheroCombinado(String ruta_fichero,File f1,File f2) {
+        return ruta_fichero+File.separator+f1.getName().substring(0, (f1.getName().length()-4))+"_"+
+                f2.getName();
     }
 }
 
