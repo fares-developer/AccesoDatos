@@ -9,7 +9,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.*;
 
-public class Principal {
+public class FileBufferedWriterReader {
 
     public static void main(String[] args) {
 
