@@ -3,6 +3,9 @@ import java.io.*;
 
 /*
     APUNTES
+
+    En el enunciado del ejercicio especifica que utilicemos DataOutputStream pero debería ser un DataInputStream
+
     Un apunte importante en este ejercicio es que los read(),concretamente en este caso readUTF()
     y readDouble(),leen uno a uno sus tipos de datos o los leen agrupados si van seguidos dentro del fichero.
  */
