@@ -1,11 +1,8 @@
-import java.io.Serial;
 import java.io.Serializable;
 
 class Vehiculo implements Serializable {
 
 
-    @Serial
-    private static final long serialVersionUID = -2346218253217546510L;
     private String matricula;
     private String marca;
     private transient double deposito;
