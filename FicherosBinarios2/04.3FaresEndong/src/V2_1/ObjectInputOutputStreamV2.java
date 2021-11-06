@@ -7,7 +7,7 @@ public class ObjectInputOutputStreamV2 {
 
     //Creamos el fichero en el que se escribirán y leerán las notas
     static File fichero = new File("FicherosBinarios2" + File.separator + "04.3FaresEndong"
-            + File.separator + "src" + File.separator+"V2_1"+File.separator + "Asignaturas.ban");
+            + File.separator + "src" + File.separator+ "V2_1" +File.separator + "Asignaturas.ban");
 
     static Scanner sc = new Scanner(System.in);
 
@@ -27,7 +27,7 @@ public class ObjectInputOutputStreamV2 {
                     "Programación Multimedia y Dispositivos Móviles",   "Sistemas de Gestión Empresarial"};
 
             for (int a = 0; a < asignaturas1.length; a++) {//Creamos un bucle para rellenar el array de asignaturas
-                //V1.Asignatura asi = new V1.Asignatura(nombres[a]);
+                //V1.V2_1.Asignatura asi = new V1.V2_1.Asignatura(nombres[a]);
                 asignaturas1[a] = new Asignatura(nombres[a]);
                 asignaturas1[a].establecerNota();
             }
