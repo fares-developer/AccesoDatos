@@ -7,76 +7,91 @@ import java.io.*;
 public class Principal {
 
     public static Scanner sc = new Scanner(System.in);
+    static File fichero = new File("FicherosBinarios2" + File.separator + "04.3FaresEndong"
+            + File.separator + "src" + File.separator + "V2_3" + File.separator + "Asignaturas.ban");
 
     public static void main(String[] args) {
 
-        crearFichero(rellenarArray());
-        leerFichero();
+        rellenarArray();
+        leer();
     }
 
-    public static ArrayList<Asignatura> rellenarArray() {
+    public static void rellenarArray() {
 
-        ArrayList<Asignatura> asi = new ArrayList<>();
-        asi.add(new Asignatura("Base de Datos"));
-        asi.add(new Asignatura("Entornos de Desarrollo"));
-        asi.add(new Asignatura("Formación y Orientación Laboral"));
-        asi.add(new Asignatura("Lenguaje de Marcas"));
-        asi.add(new Asignatura("Programación"));
-        asi.add(new Asignatura("Sistemas Informáticos"));
+        ArrayList<Asignatura> asig = new ArrayList<>();
 
-        System.out.println("Quieres introducir las notas de segundo?(S/N)");
-        String respuesta = sc.nextLine();
+        asig.add(new Asignatura("Base de Datos"));
+        asig.add(new Asignatura("Entornos de Desarrollo"));
+        asig.add(new Asignatura("Formación y Orientación Laboral"));
+        asig.add(new Asignatura("Lenguaje de Marcas"));
+        asig.add(new Asignatura("Programación"));
+        asig.add(new Asignatura("Sistemas Informáticos"));
+        escribir(asig);
 
-        if (respuesta.equalsIgnoreCase("s")) {
-            asi.add(new Asignatura("Acceso a Datos"));
-            asi.add(new Asignatura("Desarrollo de Interfaces"));
-            asi.add(new Asignatura("Empresa e Iniciativa Emprendedora"));
-            asi.add(new Asignatura("Programación Multimedia y Dispositivos Móviles"));
-            asi.add(new Asignatura("Programación de Servicios y Procesos"));
-            asi.add(new Asignatura("Sistemas de Gestión Empresarial"));
+        String respuesta = "";
+        try {
+            do {
+                System.out.println("Quieres introducir las notas de segundo?(S/N)");
+                respuesta = sc.nextLine();
+            } while (!respuesta.equals("S") && !respuesta.equals("N"));
+        } catch (Exception e) {
+            System.out.println("RESPUESTA INCORRECTA!!!!");
         }
 
-        return asi;
+        if (respuesta.equals("S")) {
+            asig.add(new Asignatura("Acceso a Datos"));
+            asig.add(new Asignatura("Desarrollo de Interfaces"));
+            asig.add(new Asignatura("Empresa e Iniciativa Emprendedora"));
+            asig.add(new Asignatura("Programación Multimedia y Dispositivos Móviles"));
+            asig.add(new Asignatura("Programación de Servicios y Procesos"));
+            asig.add(new Asignatura("Sistemas de Gestión Empresarial"));
+            escribir(asig);
+        }
     }
 
-    public static void crearFichero(ArrayList<Asignatura> asignaturas) {
+    public static void escribir(ArrayList<Asignatura> asignaturas) {
 
-        try (ObjectOutputStream oos = new ObjectOutputStream(
-                new FileOutputStream("FicherosBinarios2" + File.separator + "04.3FaresEndong"
-                        + File.separator + "src" + File.separator + "V2_3" + File.separator + "Asignaturas.ban"))) {
+        try {
+            ObjectOutputStream oos;
 
+            if (fichero.exists()) {
+                oos = new MiObjectOutputStream(new FileOutputStream(fichero, true));
+            } else {
+                oos = new ObjectOutputStream(new FileOutputStream(fichero));
+            }
             oos.writeObject(asignaturas);
+            oos.close();
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }
     }
 
-    public static void leerFichero() {
+    public static void leer() {
 
         double media = 0.0, mediaFinal;
 
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream("FicherosBinarios2"
-                + File.separator + "04.3FaresEndong" + File.separator + "src" + File.separator + "V2_3" + File.separator
-                + "Asignaturas.ban"))) {
+        System.out.println();
 
-            System.out.println();
-
+        try (ObjectInputStream ois=new ObjectInputStream(new FileInputStream(fichero))){
             ArrayList<Asignatura> asi = (ArrayList<Asignatura>) ois.readObject();
-            String cur_mod="CURSO";
+            String cur_mod = "CURSO";
 
             if (asi.size() == 12) cur_mod = "MÓDULO";
 
             System.out.println("Tu notas del " + cur_mod + " han sido:");
             for (Asignatura asignatura : asi) {
-                System.out.println("  " + asignatura.getNombre() + " : "+asignatura.getNota());
+                System.out.println("  " + asignatura.getNombre() + " : " + asignatura.getNota());
                 media += asignatura.getNota();
             }
             mediaFinal = media / asi.size();
             System.out.println();
             System.out.println("Y tu nota media final del " + cur_mod + " es de: " + mediaFinal);
-
-        } catch (IOException | ClassNotFoundException e) {
-            System.out.println("Error " + e.getMessage());
+        } catch (EOFException e) {
+            System.out.println(e.getMessage());
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
         }
     }
 }
@@ -112,5 +127,18 @@ class Asignatura implements Serializable {
             System.out.println("Debes introducir un numero");
             establecerNota();
         }
+    }
+}
+
+class MiObjectOutputStream extends ObjectOutputStream {
+
+    protected void writeStreamHeader() throws IOException { /*No hace nada*/}
+
+    /*public MiObjectOutputStream() throws IOException {
+        super();
+    }*/
+
+    public MiObjectOutputStream(OutputStream out) throws IOException {
+        super(out);
     }
 }
