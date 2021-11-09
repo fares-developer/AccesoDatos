@@ -1,8 +1,8 @@
 package V2_3;
 
-import java.io.Serializable;
-import java.util.*;
 import java.io.*;
+import java.util.*;
+
 
 public class Principal {
 
@@ -10,8 +10,9 @@ public class Principal {
     static File fichero = new File("FicherosBinarios2" + File.separator + "04.3FaresEndong"
             + File.separator + "src" + File.separator + "V2_3" + File.separator + "Asignaturas.ban");
 
-    public static void main(String[] args) {
+    static int veces = 1;
 
+    public static void main(String[] args) {
         rellenarArray();
         leer();
     }
@@ -28,14 +29,12 @@ public class Principal {
         asig.add(new Asignatura("Sistemas Informáticos"));
         escribir(asig);
 
-        String respuesta = "";
-        try {
-            do {
-                System.out.println("Quieres introducir las notas de segundo?(S/N)");
-                respuesta = sc.nextLine();
-            } while (!respuesta.equals("S") && !respuesta.equals("N"));
-        } catch (Exception e) {
-            System.out.println("RESPUESTA INCORRECTA!!!!");
+        System.out.println("Quieres introducir las notas de segundo?(S/N)");
+        String respuesta = sc.nextLine();
+        while (!respuesta.equals("S") && !respuesta.equals("N")) {
+            System.out.println("RESPUESTA INCORECCTA!!!!!!");
+            System.out.println("Quieres introducir las notas de segundo?(S/N)");
+            respuesta = sc.nextLine();
         }
 
         if (respuesta.equals("S")) {
@@ -46,6 +45,7 @@ public class Principal {
             asig.add(new Asignatura("Programación de Servicios y Procesos"));
             asig.add(new Asignatura("Sistemas de Gestión Empresarial"));
             escribir(asig);
+            veces++;
         }
     }
 
@@ -72,8 +72,13 @@ public class Principal {
 
         System.out.println();
 
-        try (ObjectInputStream ois=new ObjectInputStream(new FileInputStream(fichero))){
-            ArrayList<Asignatura> asi = (ArrayList<Asignatura>) ois.readObject();
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(fichero))) {
+
+            ArrayList<Asignatura> asi = null;
+            for (int a=0; a<veces; a++) {
+                asi = (ArrayList<Asignatura>) ois.readObject();
+            }
+
             String cur_mod = "CURSO";
 
             if (asi.size() == 12) cur_mod = "MÓDULO";
@@ -85,7 +90,7 @@ public class Principal {
             }
             mediaFinal = media / asi.size();
             System.out.println();
-            System.out.println("Y tu nota media final del " + cur_mod + " es de: " + mediaFinal);
+            System.out.println("Y tu nota media final del " + cur_mod + " es de: " + Math.floor(mediaFinal));
         } catch (EOFException e) {
             System.out.println(e.getMessage());
         } catch (IOException e) {
@@ -134,9 +139,9 @@ class MiObjectOutputStream extends ObjectOutputStream {
 
     protected void writeStreamHeader() throws IOException { /*No hace nada*/}
 
-    /*public MiObjectOutputStream() throws IOException {
+    public MiObjectOutputStream() throws IOException {
         super();
-    }*/
+    }
 
     public MiObjectOutputStream(OutputStream out) throws IOException {
         super(out);
