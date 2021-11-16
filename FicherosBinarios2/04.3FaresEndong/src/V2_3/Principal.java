@@ -29,13 +29,12 @@ public class Principal {
         asig.add(new Asignatura("Sistemas Informáticos"));
         escribir(asig);
 
-        System.out.println("Quieres introducir las notas de segundo?(S/N)");
-        String respuesta = sc.nextLine();
-        while (!respuesta.equals("S") && !respuesta.equals("N")) {
-            System.out.println("RESPUESTA INCORECCTA!!!!!!");
+        String respuesta;
+        do {
             System.out.println("Quieres introducir las notas de segundo?(S/N)");
             respuesta = sc.nextLine();
-        }
+            if (!respuesta.equals("S") && !respuesta.equals("N")) System.out.println("RESPUESTA INCORECCTA!!!!!!");
+        } while (!respuesta.equals("S") && !respuesta.equals("N"));
 
         if (respuesta.equals("S")) {
             asig.add(new Asignatura("Acceso a Datos"));
@@ -75,8 +74,8 @@ public class Principal {
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(fichero))) {
 
             ArrayList<Asignatura> asi = null;
-            for (int a=0; a<veces; a++) {
-                asi = (ArrayList<Asignatura>) ois.readObject();
+            for (int a = 0; a < veces; a++) {
+                asi = (ArrayList<Asignatura>) ois.readObject();//Cuando termina de leer el fichero devuelve un EOF
             }
 
             String cur_mod = "CURSO";
@@ -97,40 +96,6 @@ public class Principal {
             System.out.println(e.getMessage());
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
-        }
-    }
-}
-
-class Asignatura implements Serializable {
-
-    private String nombre;
-    private double nota;
-
-    public Asignatura(String nombre) {
-        this.nombre = nombre;
-        establecerNota();
-    }
-
-    public String getNombre() {
-        return nombre;
-    }
-
-    public double getNota() {
-        return nota;
-    }
-
-    public void establecerNota() {
-
-        try {
-            System.out.println("Introduce tu nota en " + getNombre());
-            nota = Double.parseDouble(Principal.sc.nextLine());
-            while (nota < 0 || nota > 10) {
-                System.out.println("Nota Incorrecta, vuelve a introducir tu nota en " + getNombre());
-                nota = Double.parseDouble(Principal.sc.nextLine());
-            }
-        } catch (NumberFormatException e) {
-            System.out.println("Debes introducir un numero");
-            establecerNota();
         }
     }
 }
