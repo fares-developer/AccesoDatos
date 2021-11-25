@@ -9,7 +9,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.*;
 
-public class FileBufferedWriterReader {
+public class    FileBufferedWriterReader {
 
     public static void main(String[] args) {
 
@@ -47,7 +47,7 @@ public class FileBufferedWriterReader {
             //Esta instancia pertenece al fichero que se creará a partir de el nombre de otros dos existentes
             File f3 = new File(crearFicheroCombinado(ruta_fichero,f1,f2));
 
-            if (f3.exists() == false) {//Comprobamos si el fichero existe antes de crearlo
+            if (!f3.exists()) {//Comprobamos si el fichero existe antes de crearlo
                 //Como el fichero todavía no existe, lo inicializamos y lo creamos llamando al método escribirFichero
                 fichero_nuevo=new BufferedWriter(new FileWriter(f3));
                 escribirFichero(f1, f2, fichero_nuevo);
