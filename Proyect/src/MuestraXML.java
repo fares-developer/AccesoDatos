@@ -1,6 +1,6 @@
+
 import org.xml.sax.Attributes;
 import org.xml.sax.helpers.DefaultHandler;
-
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import java.io.File;
@@ -117,17 +117,21 @@ class ManejadorSAX extends DefaultHandler {
     //Este método comprueba que los argumentos introducidos por el usuario corresponden a esta instrucción
     public static void comprobarArgs(ArrayList<String> p) {//Recibe el arrayList de los argumentos del usuario
         try {
+
+            if (!(p.get(1).substring(p.get(1).length() - 4, p.get(1).length()).equals(".xml"))){
+                System.out.println("Error, el fichero introducido no es un xml");//Esto se muetra si no es un XML
+
+            }else if (!p.get(2).equals("/sinEtiquetas") && !p.get(2).equals("/conEtiquetas")) {
             //Si el segundo argumento es diferente de con o sinEtiquetas, pide al usuario comprobar los argumentos
-            if (!p.get(1).equals("/sinEtiquetas") && !p.get(1).equals("/conEtiquetas")) {
                 System.out.println("Comprueba que los argumentos son correctos");
             } else {//Si se ha llegado aquí significa que, o bien es conEtiqueta, o sinEtiqueta
 
-                if (p.get(1).equals("/sinEtiquetas")) tags = false;//Si es sinEtiquetas, tags cambia a false
-                if (p.get(1).equals("/conEtiquetas")) tags = true;//Si es conEtiquetas, tags cambia a true
+                if (p.get(2).equals("/sinEtiquetas")) tags = false;//Si es sinEtiquetas, tags cambia a false
+                if (p.get(2).equals("/conEtiquetas")) tags = true;//Si es conEtiquetas, tags cambia a true
                 //La variable tags se explica más arriba en la clase actual
 
                 //Creamos una instancia de MuestraXML que se encargará de trabajar con el ManejadorSAX y GestionarSAX
-                MuestraXML myxml = new MuestraXML(new File(p.get(0)));
+                MuestraXML myxml = new MuestraXML(new File(p.get(1)));
             }
         } catch (Exception e) {
             System.out.println("Se ha producido un error inesperado");
