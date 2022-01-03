@@ -18,32 +18,29 @@ public class Principal {
                 System.out.print((new File("").getAbsolutePath() + "> "));
                 String[] c = entrada.nextLine().split(" ");//Guardamos en un Array lo que el usuario pasa por teclado
 
-                //Guardamos en un arrayList los argumentos del comando sin importar la cantidad introducida
+                //Guardamos en un arrayList el comando y sus argumentos
                 ArrayList<String> p = comprobarComando(c);
-
 
                 switch (p.get(0)) {//Utilizamos un condicional switch para trabajar con cada instrucción de la consola
                     case "copia":
-                        copiar(p.get(1), p.get(2), true);//p.get(0) y p.get(1) hacen referencia a los argumentos
+                        copiar(p.get(1), p.get(2), true);//p.get(1) y p.get(2) hacen referencia a los argumentos
                         break;
                     case "elimina":
                         eliminar(p.get(1), true);
                         break;
                     case "mueve":
-                        boolean r;
-                        r = copiar(p.get(1), p.get(2), false);
-                        if (r) eliminar(p.get(0), false);
+                        boolean r = copiar(p.get(1), p.get(2), false);//r es para controlar si se ha movido
+                        if (r) eliminar(p.get(1), false);//si se ha movido entonces llamamos a eliminar
                         break;
                     case "lista":
-                        if (p.size() == 0) {//Si no se ha pasado ningún argumento la ruta es la actual
+                        if (p.size() < 2) {//Si no se ha pasado ningún argumento la ruta es la actual
                             lista(".\\");
                         } else {
                             lista(p.get(1));//en caso contrario se le pasa la ruta
                         }
                         break;
                     case "listaArbol":
-
-                        if (p.size() > 0) {
+                        if (p.size() > 1) {
                             if (new File(p.get(1)).isDirectory()) {
                                 listaArbol(new File(p.get(1)), 0);
                             } else {
@@ -76,14 +73,12 @@ public class Principal {
     public static ArrayList<String> comprobarComando(String[] comando) {
         ArrayList<String> param = new ArrayList<>();
         try {
-            /*En este bucle  for a = 1 porque debe ignorar el comando(copiar,eliminar,etc) ya que en la posición
-             cero y los argumentos están de la posición 1 a el total que ha metido el usuario. Posteriormente
-             creo un String que será igual al argumento del comando en la posición a eliminando los espacios en blanco,
+            /* Creo un String que será igual al argumento del comando eliminando los espacios en blanco,
              las tabulaciones y los saltos de carro con \\s que es una experesión regular en java, y si el resultado
              de esto es distinto de "" entonces lo añado a param*/
 
-            for (int a = 0; a < comando.length; a++) {
-                String c = comando[a].replaceAll("\\s", "");
+            for (String s : comando) {
+                String c = s.replaceAll("\\s", "");
                 if (!c.equals("")) param.add(c);
             }
         } catch (Exception e) {
@@ -95,12 +90,11 @@ public class Principal {
     /*Este método copia un archivo de una ubicación a otra, recibe por parámetros la ruta de origen,destino,y un booleano
     que utilizaremos para controlar si se muestra o no un mensaje cuando se copie.*/
     public static boolean copiar(String origen, String destino, boolean mensaje) {
-        boolean respuesta = true;
+        boolean respuesta = true;//Con este booleano decidimos copiar o no el fichero
         try {
 
-            /* Instanciamos dos objetos de tipo File para las rutas de origen y destino e inicializamos el booleano
-               que por determina si se copia el fichero, por defecto será true*/
-            File ruta_destino = null;
+            /* Instanciamos dos objetos de tipo File para las rutas de origen y destino*/
+            File ruta_destino = new File(destino);
             File ruta_origen = new File(origen);
 
             //Comprobamos que la ruta de origen existe y es un fichero y caso contrario nos salta un aviso
@@ -109,24 +103,21 @@ public class Principal {
 
             } else if (ruta_origen.exists()) {//Entra aquí si la ruta origen existe y es un fichero
 
-                if (!new File(destino).exists()) {
-                    System.out.println("La ruta destino no existe");
-                    respuesta = false;
+                /*Si la ruta de destino no es un directorio entonces inicializamos normalmente el objeto File.
+                  si lo es le añadimos el nombre de fichero origen*/
 
-                } else {//Entra aquí si la ruta de destino existe
+                ruta_destino = (new File(destino).isDirectory()) ?
+                        new File(destino + File.separator + ruta_origen.getName()) : new File(destino);
 
-                    /*Si la ruta de destino no es un directorio entonces inicializamos normalmente el objeto File.
-                    si lo es le añadimos el nombre de fichero origen*/
-
-                    ruta_destino = (new File(destino).isDirectory()) ?
-                            new File(destino + File.separator + ruta_origen.getName()) : new File(destino);
-
-                    if (ruta_destino.exists() && ruta_destino.isFile()) {
+                if (ruta_destino.exists() && ruta_destino.isFile()) {
                     /*Si el fichero de destino ya existe entonces preguntamos al usuario si quiere sobreescribirlo
                       Y en caso afirmativo le decimos que lo sobreescriba */
-                        System.out.println("El fichero ya existe, desea sobreescribirlo?(S/N)");
-                        String res = entrada.nextLine();//Almacenamos la respuesta del usuario
-                        if (res.equalsIgnoreCase("N")) respuesta = false;
+                    System.out.println("El fichero ya existe, desea sobreescribirlo?(S/N)");
+                    String res = entrada.nextLine();//Almacenamos la respuesta del usuario
+
+                    if (res.equalsIgnoreCase("N")) {
+                        if (!mensaje) System.out.println("No se ha movido el fichero");
+                        respuesta = false;
                     }
                 }
 
@@ -153,12 +144,11 @@ public class Principal {
                                 "\nComprueba que el fichero a copiar existe \nRevisa las rutas de origen y destino\n");
                     }
                 }
-
             }
         } catch (Exception e) {//Esta excepcion salta si se produce algún error no esperado
             System.out.println("Se ha producido un error");
         }
-        return respuesta;
+        return respuesta;//Devolvemos esto para el comando mover
     }
 
     //Este método elimina cualquier fichero en la ubicación que le especifiquemos y recibe el fichero a eliminar
@@ -186,7 +176,8 @@ public class Principal {
         File[] hijos = dir.listFiles();//Creamos un array con hijos del directorio especificado
         int archivos = 0, directorios = 0, total_fic = 0, total_dirs = 0;
         try {
-            for (File hijo : hijos) {//Esto se repetirá tantas veces coomo subdirectorios y ficheros haya
+            for (File hijo : Objects.requireNonNull(hijos)) {
+                //Esto se repetirá tantas veces coomo subdirectorios y ficheros haya
 
                 String Dir = "<DIR>";//Este String es para la etiqueta de dir
 
@@ -198,13 +189,13 @@ public class Principal {
                 String fecha = formato.format(hijo.lastModified());
 
                 if (hijo.isDirectory()) {//Si uno de los hijos es un directorio se imprime con el formato especificado
-                    System.out.printf("%s %6s %16s %-2s %n", fecha, Dir, " ", hijo.getName());
+
+                    System.out.printf("%s %s %6s %s%n", fecha, Dir, "", hijo.getName());
                     directorios++;
                     total_dirs += (int) devuelveSize(hijo);//Sumatoria de los tamaños de las carpetas y subcarpetas
 
                 } else {
-                    Dir = "";//Si es un fichero no se muestra la etiquete dir
-                    System.out.printf("%4s %-8s %8d %4s %-8s %n", fecha, Dir, hijo.length(), " ", hijo.getName());
+                    System.out.printf("%s %11d %s %s%n", fecha, hijo.length(), "", hijo.getName());
                     archivos++;//El recuento de los archivos
                     total_fic += hijo.length();//La sumatorio de los tamaños de los archivos
                 }
@@ -219,15 +210,15 @@ public class Principal {
     }
 
 
-    /*Este método muestra todos los subdirectorios y archivos de un directorio especificado,recibe por parámetro un
-      objeto File que será el directorio padre,y el número de tabulaciones que se tendrán que hacer*/
+    /*Este método muestra todos los subdirectorios y archivos de un directorio especificado,recibe por parámetro una
+      ruta que pertenecerá al directorio padre,y el número de tabulaciones que se tendrán que hacer*/
     public static void listaArbol(File fichero, int tabulaciones) {
 
         /* Este bucle se recorrerá tantas veces como tabulaciones hayan sido indicadas, en la primero ejecución
           no habrán tabulaciones, por lo tanto no entrará en el bucle*/
         try {
             for (int i = 0; i < tabulaciones; i++) {
-                System.out.print("  ");
+                System.out.print("    ");
             }
             System.out.println(fichero.getName());//Imprimimos el nombre del fichero que hemos pasado por parámetro
             if (fichero.isDirectory()) {
@@ -246,12 +237,10 @@ public class Principal {
         } catch (Exception e) {
             System.out.println("Se ha producido un error");
         }
-
     }
 
     //Este método muestra el contenido de un fichero de texto y recibe la ruta de dicho fichero
     public static void muestrarTXT(String ruta) {
-
 
         if (!new File(ruta).exists()) {
             //Si el fichero especificado no existe salta este mensaje
@@ -262,7 +251,7 @@ public class Principal {
             System.out.println("Debes introducir un fichero");//Mostrarmos este texto si la ruta es de un directorio
 
         } else if (new File(ruta).exists() && !new File(ruta).isDirectory() &&
-                ruta.substring(ruta.length() - 4, ruta.length()).equals(".txt")) {
+                ruta.endsWith(".txt")) {
             //Si la ruta existe y pertenece a un fichero entonces procedemos a leerlo y mostrarlo por pantalla
 
             try (BufferedReader fr = new BufferedReader(new FileReader(ruta))) {
@@ -278,7 +267,7 @@ public class Principal {
                 System.out.println("Error, no se puede mostrar el contenido");
             }
         } else {
-            System.out.println("Error,la ruta no es de un fichero de texto");
+            System.out.println("Error,no un fichero de texto");
         }
     }
 
@@ -321,8 +310,9 @@ public class Principal {
         File f2 = new File(r2);//Segundo fichero
         try {
 
-            //Si los dos File existen y no son directorios entonces se cumple la condición y entra
-            if (f1.exists() && !f1.isDirectory() && f2.exists() && !f2.isDirectory()) {
+            //Si los dos File existen y son ficheros entonces se cumple la condición y entra
+            if (f1.exists() && f1.isFile() && f2.exists() && f2.isFile()
+                    && f1.getName().endsWith(".txt") && f2.getName().endsWith(".txt")) {
 
                 //Creamos dos BufferedReader para leer los ficheros línea a línea
                 BufferedReader br1 = new BufferedReader(new FileReader(f1));
@@ -346,6 +336,8 @@ public class Principal {
                     valor1 = br1.readLine();//Esto establece que valor es igual a la siguiente línea del fichero
                     valor2 = br2.readLine();//Siguiente línea del fichero 2
                 }
+                br1.close();
+                br2.close();
             } else {
                 System.out.println("Comprueba que los ficheros existen y son archivos.txt");
             }
