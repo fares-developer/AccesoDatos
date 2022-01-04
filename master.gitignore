@@ -1,0 +1,6 @@
+*.txt
+.xml
+.idea/
+*.iml
+/.idea/
+arreglos.gitignore
