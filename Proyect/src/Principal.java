@@ -94,7 +94,7 @@ public class Principal {
         try {
 
             /* Instanciamos dos objetos de tipo File para las rutas de origen y destino*/
-            File ruta_destino = new File(destino);
+            File ruta_destino;
             File ruta_origen = new File(origen);
 
             //Comprobamos que la ruta de origen existe y es un fichero y caso contrario nos salta un aviso
@@ -140,8 +140,11 @@ public class Principal {
 
                     } catch (IOException e) {/*Esta excepción puede saltar por diversas razones pero
                     las principales aparecen en el mensaje de error*/
-                        System.out.println("Error al copiar,haz lo siguiente:" +
-                                "\nComprueba que el fichero a copiar existe \nRevisa las rutas de origen y destino\n");
+                        System.out.println("""
+                                Error al copiar,haz lo siguiente:
+                                Comprueba que el fichero a copiar existe\s
+                                Revisa las rutas de origen y destino
+                                """);
                     }
                 }
             }

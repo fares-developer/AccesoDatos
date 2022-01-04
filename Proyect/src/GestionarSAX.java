@@ -1,23 +1,13 @@
 
 import org.xml.sax.Attributes;
 import org.xml.sax.helpers.DefaultHandler;
+
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import java.io.File;
 import java.util.ArrayList;
 
-//Esta clase se encarga de trabajar con GestionarSAX y ManejadorSAX, cuyas funciones se explican más abajo
-public class MuestraXML {
-
-    //El constructor recibe un fichero el cuál pasa el usuario a partir de comprobarArgs
-    public MuestraXML(File fichero) {
-        GestionarSAX sax = new GestionarSAX(fichero);//Recibe el fichero y se encarga del tratamiento del xml
-        ManejadorSAX manejador = new ManejadorSAX();//Maneja los eventos que se producen al recorrer el xml
-    }
-}
-
-
-class GestionarSAX {//Esta clase se encarga de la gestión e interpretación del xml
+public class GestionarSAX {//Esta clase se encarga de la gestión e interpretación del xml
 
     SAXParserFactory factory = null;//Declaramos una variable del parseador por defecto
     SAXParser parseador = null;//Declaramos una variable la cual utilizaremos para analizar el xml
@@ -63,7 +53,7 @@ class GestionarSAX {//Esta clase se encarga de la gestión e interpretación del
 class ManejadorSAX extends DefaultHandler {
 
     //Creamos una variable booleana con la cual determinamos si se muestra o no el contenido de las etiquetas
-    boolean mostrar = false;
+    boolean mostrar;
 
     //String que hace referncia a la cadena que resulta de recorrer el xml
     String cadenaRes = " ";
@@ -108,7 +98,7 @@ class ManejadorSAX extends DefaultHandler {
     public void characters(char[] ch, int start, int length) {
         if (mostrar) {//Si mostrar es true entonces se añade cada caracter de la etiqueta a cadenaRes
             for (int i = start; i < length + start; i++) {
-                cadenaRes = cadenaRes + ch[i];
+                cadenaRes = cadenaRes.concat(String.valueOf(ch[i]));
             }
         }
     }
@@ -118,20 +108,24 @@ class ManejadorSAX extends DefaultHandler {
     public static void comprobarArgs(ArrayList<String> p) {//Recibe el arrayList de los argumentos del usuario
         try {
 
-            if (!(p.get(1).substring(p.get(1).length() - 4, p.get(1).length()).equals(".xml"))){
-                System.out.println("Error, el fichero introducido no es un xml");//Esto se muetra si no es un XML
+            if (p.size() < 3) {
+                System.out.println("Faltan argumentos");
+            } else {
+                if (!p.get(1).endsWith(".xml")) {
+                    System.out.println("Error, el fichero introducido no es un xml");//Esto se muetra si no es un XML
 
-            }else if (!p.get(2).equals("/sinEtiquetas") && !p.get(2).equals("/conEtiquetas")) {
-            //Si el segundo argumento es diferente de con o sinEtiquetas, pide al usuario comprobar los argumentos
-                System.out.println("Comprueba que los argumentos son correctos");
-            } else {//Si se ha llegado aquí significa que, o bien es conEtiqueta, o sinEtiqueta
+                } else if (!p.get(2).equals("/sinEtiquetas") && !p.get(2).equals("/conEtiquetas")) {
+                    //Si el segundo argumento es diferente de con o sinEtiquetas, pide al usuario comprobar los argumentos
+                    System.out.println("Comprueba que los argumentos son correctos");
+                } else {//Si se ha llegado aquí significa que, o bien es conEtiqueta, o sinEtiqueta
 
-                if (p.get(2).equals("/sinEtiquetas")) tags = false;//Si es sinEtiquetas, tags cambia a false
-                if (p.get(2).equals("/conEtiquetas")) tags = true;//Si es conEtiquetas, tags cambia a true
-                //La variable tags se explica más arriba en la clase actual
+                    if (p.get(2).equals("/sinEtiquetas")) tags = false;//Si es sinEtiquetas, tags cambia a false
+                    if (p.get(2).equals("/conEtiquetas")) tags = true;//Si es conEtiquetas, tags cambia a true
+                    //La variable tags se explica más arriba en la clase actual
 
-                //Creamos una instancia de MuestraXML que se encargará de trabajar con el ManejadorSAX y GestionarSAX
-                MuestraXML myxml = new MuestraXML(new File(p.get(1)));
+                    //Llamamos al constructor de gestionarSax y le pasamos el xml a interpretar
+                    new GestionarSAX(new File(p.get(1)));
+                }
             }
         } catch (Exception e) {
             System.out.println("Se ha producido un error inesperado");
