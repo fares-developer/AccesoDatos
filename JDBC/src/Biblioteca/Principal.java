@@ -100,7 +100,7 @@ public class Principal {
             if (rs != null) rs.close();
 
         } catch (SQLException e) {
-            System.out.println("Se ha producido un error: " + e.getMessage());
+            System.out.println("Se ha producido un error");
         }
     }
 
@@ -113,7 +113,7 @@ public class Principal {
             if (rs == 1) System.out.println("Operacion realizada con éxito");
 
         } catch (SQLException e) {
-            System.out.println("Se producido un error: " + e.getMessage());
+            System.out.println("Se producido un error");
         }
     }
 

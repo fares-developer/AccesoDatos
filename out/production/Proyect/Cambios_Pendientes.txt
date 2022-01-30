@@ -1,0 +1,10 @@
+Esta es la lista de funcionalidades pendientes de implementar que no indica el enunciado:
+*Comando copia:
+    -Hacer que se copie un archivo una ruta destino si la ruta origen es un directorio,
+        en cmd esto lo que hace es copiar el contenido de todos los archivos del directorio
+        origen en el fichero destino(PENDIENTE DE DETERMINACIÓN)
+
+ *Añadir un historial de comandos para acceder rápidamente a los que se han ejecutado
+ *Comando Lista:
+    -Para obtener el tamaño de una carpeta es necesario implementar un método(PENDIENTE DE DETERMINACIÓN)
+ *Arreglar las sangrías en el comando lista.
