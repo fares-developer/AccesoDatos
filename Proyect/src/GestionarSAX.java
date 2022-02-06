@@ -1,4 +1,3 @@
-
 import org.xml.sax.Attributes;
 import org.xml.sax.helpers.DefaultHandler;
 
@@ -7,7 +6,7 @@ import javax.xml.parsers.SAXParserFactory;
 import java.io.File;
 import java.util.ArrayList;
 
-public class GestionarSAX {//Esta clase se encarga de la gestión e interpretación del xml
+class GestionarSAX {//Esta clase se encarga de la gestión e interpretación del xml
 
     SAXParserFactory factory = null;//Declaramos una variable del parseador por defecto
     SAXParser parseador = null;//Declaramos una variable la cual utilizaremos para analizar el xml
@@ -132,5 +131,3 @@ class ManejadorSAX extends DefaultHandler {
         }
     }
 }
-
-

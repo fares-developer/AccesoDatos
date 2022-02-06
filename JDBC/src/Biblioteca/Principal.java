@@ -26,11 +26,20 @@ public class Principal {
             res = sc.nextLine();
 
             switch (res) {
-                case "1" -> Op1();
-                case "2" -> Op2();
-                case "3" -> Op3();
-                case "4" -> Op4();
-                default -> System.out.println("Esta opción no se contempla");
+                case "1":
+                    Op1();
+                    break;
+                case "2":
+                    Op2();
+                    break;
+                case "3":
+                    Op3();
+                    break;
+                case "4":
+                    Op4();
+                    break;
+                default:
+                    System.out.println("Esta opción no se contempla");
             }
         } while (!res.equals("exit"));
 
@@ -60,40 +69,65 @@ public class Principal {
                     sentencia.setString(1, criterio);
                     sentencia.setString(2, criterio);
                     rs = sentencia.executeQuery();
-                    rs.next();
-                    System.out.println("DNI: " + rs.getString("soc_dni") +
-                            "\n Nombre: " + rs.getString("soc_nombre"));
+
+                    if (!rs.next()) {
+                        System.out.println("\nRegistro no encontrado\n");
+                    } else {
+                        do {
+                            System.out.println("\nDNI: " + rs.getString("soc_dni") +
+                                    "\nNombre: " + rs.getString("soc_nombre") + "\n------------------\n");
+                        } while (rs.next());
+                    }
+                    break;
+
                 case "libros":
-                    sentencia = con.prepareStatement("select * from " + tabla + " where lib_titulo=? or lib_autor=?;");
+                    sentencia = con.prepareStatement("select * from " + tabla + " where lib_titulo=? or lib_autor=?");
                     sentencia.setString(1, criterio);
                     sentencia.setString(2, criterio);
                     rs = sentencia.executeQuery();
-                    rs.next();
-                    System.out.println("ISBN: " + rs.getString("lib_isbn") +
-                            "\nTitulo: " + rs.getString("lib_titulo") +
-                            "\nAutor: " + rs.getString("lib_autor") +
-                            "\nPáginas: " + rs.getInt(1));
+
+                    if (!rs.next()) {
+                        System.out.println("\nRegistro no encontrado\n");
+                    } else {
+                        do {
+                            System.out.println("\nISBN: " + rs.getString("lib_isbn") +
+                                    "\nTitulo: " + rs.getString("lib_titulo") +
+                                    "\nAutor: " + rs.getString("lib_autor") +
+                                    "\nPáginas: " + rs.getInt("lib_paginas")+ "\n------------------\n");
+                        } while (rs.next());
+                    }
+                    break;
 
                 case "prestamos":
                     if (criterio == null) {
                         sentencia = con.prepareStatement("select * from prestamos where pre_fecfin is ?");
                         sentencia.setString(1, null);
                         rs = sentencia.executeQuery();
-                        while (rs.next()) {
-                            System.out.println("Fecha Inicio: " + rs.getDate("pre_fecini") +
-                                    "\nDNI del socio: " + rs.getString("pre_dni") +
-                                    "\nISBN del libro: " + rs.getString("pre_isbn")+"\n------------------\n");
+
+                        if (!rs.next()) {
+                            System.out.println("\nRegistro no encontrado\n");
+                        } else {
+                            do {
+                                System.out.println("Fecha Inicio: " + rs.getDate("pre_fecini") +
+                                        "\nDNI del socio: " + rs.getString("pre_dni") +
+                                        "\nISBN del libro: " + rs.getString("pre_isbn") + "\n------------------\n");
+                            } while (rs.next());
                         }
                     } else {
                         sentencia = con.prepareStatement("select count(*) from prestamos where pre_dni = ?");
                         sentencia.setString(1, criterio);
                         rs = sentencia.executeQuery();
 
-                        while (rs.next()) {
-                            System.out.println("DNI del socio: "+criterio+"\n"
-                                    +"Libros prestados: "+rs.getInt(1)+"\n");
+                        if (!rs.next()) {
+                            System.out.println("\nRegistro no encontrado\n");
+                        } else {
+                            do {
+                                System.out.println("DNI del socio: " + criterio + "\n"
+                                        + "Libros prestados: " + rs.getInt(1) + "\n------------------\n");
+                            } while (rs.next());
                         }
                     }
+                    break;
                 default:
 
             }
@@ -122,10 +156,12 @@ public class Principal {
         do {
             System.out.println("Introduce una instrucción");
             s = sc.nextLine().strip();
-            if (s.startsWith("insert") || s.startsWith("update") || s.startsWith("delete")) {
-                MyStatement(s);
-            } else if (!s.equals("exit")) {
-                System.out.println("Operación no permitida");
+            if (!s.equals("exit")) {
+                if (s.startsWith("insert") || s.startsWith("update") || s.startsWith("delete")) {
+                    MyStatement(s);
+                } else {
+                    System.out.println("Operación no permitida");
+                }
             }
         } while (!s.equals("exit"));
     }
@@ -143,12 +179,9 @@ public class Principal {
                     System.out.println("Introduzca el criterio de búsqueda");
                     c = sc.nextLine();
 
-                    if (op.equals("a") && !c.equals("exit")) {
-                        MyPreparedStatement(c, "socios");
-                    } else if (op.equals("b") && !c.equals("exit")) {
-                        MyPreparedStatement(c, "libros");
-                    } else {
-                        System.out.println("Criterio no válido");
+                    if (!c.equals("exit")) {
+                        if (op.equals("a")) MyPreparedStatement(c, "socios");
+                        if (op.equals("b")) MyPreparedStatement(c, "libros");
                     }
                 } while (!c.equals("exit"));
             }
@@ -176,7 +209,7 @@ public class Principal {
         do {
             System.out.println("a) Ver prestamos en Curso \nb) Libros prestados por socio");
             res = sc.nextLine();
-            if (res.equals("a")){
+            if (res.equals("a")) {
                 MyPreparedStatement(null, "prestamos");
             }
             if (res.equals("b")) {
