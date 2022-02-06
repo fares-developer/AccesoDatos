@@ -26,3 +26,10 @@ create table prestamos (
 
 alter table prestamos add foreign key PRE_LIB_FK(pre_isbn) references libros(lib_isbn);
 alter table prestamos add foreign key PRE_SOC_FK(pre_dni) references socios(soc_dni);
+-- --------------------------------------------------------------------------------------------------
+delimiter //
+create procedure setPrestamos(in isbn varchar(24),in dni varchar(16))
+begin
+	insert into prestamos(pre_isbn,pre_dni,pre_fecini) values (isbn,dni,current_timestamp());
+end //
+delimiter ;
