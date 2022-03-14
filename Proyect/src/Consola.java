@@ -16,7 +16,7 @@ class Marco extends JFrame {
     lamina miLamina = new lamina();
 
     public Marco() {
-        setIconImage(new ImageIcon("Proyect/src/Image/edib.png").getImage());
+        setIconImage(new ImageIcon("src/Image/edib.png").getImage());
         var ancho = Toolkit.getDefaultToolkit().getScreenSize().width;
         var alto = Toolkit.getDefaultToolkit().getScreenSize().height;
         setBounds(ancho / 4, alto / 4, ancho / 2, alto / 2);
@@ -72,7 +72,13 @@ class lamina extends JPanel implements KeyListener {
     @Override
     public void keyPressed(KeyEvent e) {
         if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-            Consola.arranca(lanzadorComandos.getTextComando());//Lanza el comando si se pulsa ENTER
+
+            if (Consola.ruta.equals("MySQL> ")) {
+                BaseDatos.arranca(lanzadorComandos.getTextComando());
+            } else {
+                Consola.arranca(lanzadorComandos.getTextComando());//Lanza el comando si se pulsa ENTER
+            }
+
         }
     }
 
@@ -106,6 +112,7 @@ public class Consola {
                 """);
         ventana.miLamina.pantalla_consola.append(" " + ruta);
         ventana.miLamina.lanzadorComandos.setParteNoEditable(ruta);
+        ventana.miLamina.lanzadorComandos.grabFocus();//Ponemos el foco el lanzador de comandos(JTextField)
 
     }
 
@@ -155,7 +162,34 @@ public class Consola {
                 case "comparaTXT":
                     comparaTXT(p.get(1), p.get(2));
                     break;
+                case "soloLectura":
+                    setPermisos(p.get(1), p.get(2), true);
+                    break;
+                case "eliminaCascada":
+                    File f = new File(p.get(1));
+                    eliminarCascada(f, p.get(2));
+                    break;
+                case "cantidadNodo":
+                    tratarXML(new File(p.get(1)), p.get(2),"cantidadNodo");
+                    break;
+                case "modoBD":
+                    modoBD();
+                    break;
+                case "nivelXML":
+                    if (p.get(1).endsWith("xml")) {
+                        tratarXML(new File(p.get(1)),null,"nivelXML");
+                    } else {
+                        write("El fichero indicado debe ser un xml", false);
+                    }
+                    break;
+                case "creaBDdeXML":
+                    crearBDXML(p.get(1));
+                    break;
+                case "creaXMLdeBD":
+                    crearXMLBD(p.get(1));
+                    break;
                 case "salir":
+                    if(BaseDatos.con != null)BaseDatos.con.close();
                     System.exit(0);
                 default:
                     write("Error, revise el comando", false);
@@ -277,7 +311,7 @@ public class Consola {
         } catch (Exception e) {
             /*Esta excepción salta si se produce cualquier error inesperado al intentar eliminar el fichero, en caso
               de que el sistema no nos permita eliminar el archivo saltará una SecurityException*/
-            write("Error al eliminar el fichero", false);
+            write("Error al eliminar el fichero" + e.getMessage(), false);
         }
     }
 
@@ -472,4 +506,106 @@ public class Consola {
         }
         return tamanyo;
     }
+
+    public static void setPermisos(String ruta, String permiso, boolean mensaje) {
+
+        File f = new File(ruta);
+        boolean b = true;
+        if (f.isFile()) {
+            if (permiso.equalsIgnoreCase("/s")) {
+                try {
+                    b = f.setReadOnly();
+                } catch (Exception e) {
+                    write("Se ha producido un error", false);
+                }
+            } else if (permiso.equalsIgnoreCase("/n")) {
+                try {
+                    b = f.setWritable(true);
+                } catch (Exception e) {
+                    write("Se ha producido un error", false);
+                }
+            }
+        } else {
+            write("Sólo se pueden modificar permisos de ficheros", false);
+        }
+
+        write((b && mensaje) ? "Se ejecutado correctamente" : "No se ha podido ejecutar", false);
+
+    }
+
+    public static void eliminarCascada(File fichero, String extension) {
+
+        try {
+            if (fichero.getName().endsWith("." + extension)) {
+                //El siguiente método devuleve un entero, 0 si la respuesta es afirmativa y 1 si es negativa
+                int res = JOptionPane.showConfirmDialog(null,
+                        "Desea eliminar " + fichero.getCanonicalPath() + "?", "Alerta!!!!",
+                        JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE);
+
+                if (res == 0) {
+                    if (!fichero.canWrite()) {
+                        int res2 = JOptionPane.showConfirmDialog(null,
+                                fichero.getAbsolutePath() + " tiene permisos de sólo lectura \nAun así desea eliminar "
+                                        + fichero.getAbsolutePath() + " ?", "Cuidado!!!!!!", JOptionPane.YES_NO_OPTION,
+                                JOptionPane.WARNING_MESSAGE);
+
+                        if (res2 == 0) {
+                            boolean r = fichero.delete();
+                            if (!r) write("No se ha podido eliminar "+fichero.getAbsolutePath(),false);
+                        }
+                    } else if (!fichero.delete()) {
+                        write("Este fichero está en uso y no puede ser eliminado", false);
+                    }
+                }
+            }
+            if (fichero.isDirectory()) {
+
+                File[] hijos = fichero.listFiles();
+                if (hijos != null) {
+                    for (File f : hijos) {
+                        eliminarCascada(f, extension);
+                    }
+                }
+            }
+        } catch (IOException e) {
+            write("Error: " + e.getMessage(), false);
+        }
+    }
+
+    private static void tratarXML(File fichero, String elemento, String comando) {
+
+        if (fichero.getName().endsWith("xml")) {
+            if (comando.equalsIgnoreCase("cantidadNodo")) {
+                ManejadorSAX.count_nodo = elemento;
+                new GestionarSAX(fichero, false,false);
+                write("El nodo " + elemento + " aparece " +
+                                ManejadorSAX.contador_nodo + ((ManejadorSAX.contador_nodo == 1) ? " vez" : " veces")
+                        , false);
+
+                //Restablecemos contador_nodo
+                ManejadorSAX.contador_nodo = 0;
+            } else if (comando.equalsIgnoreCase("nivelXML")) {
+                new GestionarSAX(fichero, false,false);
+                write("El fichero xml es de nivel " + ManejadorSAX.nivel, false);
+
+                //Restablecemos los valores
+                ManejadorSAX.nivel = 0;
+            }
+        } else {
+            write("El fichero indicado no es un xml", false);
+        }
+    }
+
+    private static void crearBDXML(String ruta) {
+        File xm = new File(ruta);
+        new GestionarSAX(xm, false,true);
+        ManejadorSAXBD.resetValues();
+
+    }
+
+    private static void crearXMLBD(String bbdd) {
+        BaseDatos.crearXML(bbdd);
+    }
+
+    private static void modoBD() {BaseDatos.Inicio();}
 }
