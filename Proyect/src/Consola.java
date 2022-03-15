@@ -170,14 +170,14 @@ public class Consola {
                     eliminarCascada(f, p.get(2));
                     break;
                 case "cantidadNodo":
-                    tratarXML(new File(p.get(1)), p.get(2),"cantidadNodo");
+                    tratarXML(new File(p.get(1)), p.get(2), "cantidadNodo");
                     break;
                 case "modoBD":
                     modoBD();
                     break;
                 case "nivelXML":
                     if (p.get(1).endsWith("xml")) {
-                        tratarXML(new File(p.get(1)),null,"nivelXML");
+                        tratarXML(new File(p.get(1)), null, "nivelXML");
                     } else {
                         write("El fichero indicado debe ser un xml", false);
                     }
@@ -189,7 +189,7 @@ public class Consola {
                     crearXMLBD(p.get(1));
                     break;
                 case "salir":
-                    if(BaseDatos.con != null)BaseDatos.con.close();
+                    if (BaseDatos.con != null) BaseDatos.con.close();
                     System.exit(0);
                 default:
                     write("Error, revise el comando", false);
@@ -551,7 +551,7 @@ public class Consola {
 
                         if (res2 == 0) {
                             boolean r = fichero.delete();
-                            if (!r) write("No se ha podido eliminar "+fichero.getAbsolutePath(),false);
+                            if (!r) write("No se ha podido eliminar " + fichero.getAbsolutePath(), false);
                         }
                     } else if (!fichero.delete()) {
                         write("Este fichero está en uso y no puede ser eliminado", false);
@@ -577,7 +577,7 @@ public class Consola {
         if (fichero.getName().endsWith("xml")) {
             if (comando.equalsIgnoreCase("cantidadNodo")) {
                 ManejadorSAX.count_nodo = elemento;
-                new GestionarSAX(fichero, false,false);
+                new GestionarSAX(fichero, false, false);
                 write("El nodo " + elemento + " aparece " +
                                 ManejadorSAX.contador_nodo + ((ManejadorSAX.contador_nodo == 1) ? " vez" : " veces")
                         , false);
@@ -585,7 +585,7 @@ public class Consola {
                 //Restablecemos contador_nodo
                 ManejadorSAX.contador_nodo = 0;
             } else if (comando.equalsIgnoreCase("nivelXML")) {
-                new GestionarSAX(fichero, false,false);
+                new GestionarSAX(fichero, false, false);
                 write("El fichero xml es de nivel " + ManejadorSAX.nivel, false);
 
                 //Restablecemos los valores
@@ -598,7 +598,7 @@ public class Consola {
 
     private static void crearBDXML(String ruta) {
         File xm = new File(ruta);
-        new GestionarSAX(xm, false,true);
+        new GestionarSAX(xm, false, true);
         ManejadorSAXBD.resetValues();
 
     }
@@ -607,5 +607,7 @@ public class Consola {
         BaseDatos.crearXML(bbdd);
     }
 
-    private static void modoBD() {BaseDatos.Inicio();}
+    private static void modoBD() {
+        BaseDatos.Inicio();
+    }
 }

@@ -4,7 +4,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedList;
 
 class Conexion {
@@ -46,16 +45,15 @@ public class BaseDatos {
             //Guardamos en un arrayList el comando y sus argumentos
             ArrayList<String> p = Consola.comprobarComando(c);
 
-            switch (p.get(0)) {//Utilizamos un condicional switch para trabajar con cada instrucción de la consola
-                case "modoConsola":
-                    Consola.ruta = new File("").getAbsolutePath() + "> ";
-                    Consola.ventana.miLamina.lanzadorComandos.setParteNoEditable(Consola.ruta);
-                    break;
-                default:
-                    String cadena = "";
-                    for (int a = 0; a < p.size(); a++) cadena = cadena + " " + p.get(a);
-                    System.out.println(cadena);
-                    myStatement(cadena);
+            //Utilizamos un condicional switch para trabajar con cada instrucción de la consola
+            if ("modoConsola".equals(p.get(0))) {
+                Consola.ruta = new File("").getAbsolutePath() + "> ";
+                Consola.ventana.miLamina.lanzadorComandos.setParteNoEditable(Consola.ruta);
+            } else {
+                String cadena = "";
+                for (String value : p) cadena = cadena + " " + value;
+                System.out.println(cadena);
+                myStatement(cadena);
             }
         } catch (Exception e) {
             Consola.write("Se ha producido un error", false);
@@ -73,23 +71,18 @@ public class BaseDatos {
             stm.executeUpdate("create database mibase;");
             stm.close();
         } catch (SQLException e) {
-            e.printStackTrace();
+            Consola.write("Se ha producido un error", false);
         }
     }
 
     public static void crearXML(String bbdd) {
         LinkedList<String> tablas = new LinkedList<>();
         LinkedList<String> primarys = new LinkedList<>();
+        LinkedList<String> campos = new LinkedList<>();
 
         escribirXML(bbdd, null, "padre", null, null, null, true);
-        /*escribirXML(bbdd, "tartas", "hijo", null, 1,"id",true);
-        escribirXML(bbdd, "nombre", "nieto", "Tarta Carrot Cake", null,null,true);
-        escribirXML(bbdd, "precio", "nieto", "35.45€", null,null, true);
-        escribirXML(bbdd, "cantidad", "nieto", "10", null,null, true);
-        escribirXML(bbdd, "tartas", "hijo", null, null,null, false);*/
 
         try {
-            con.setCatalog(bbdd);//Especificamos la base de datos para utilizarla más adelante
 
             BufferedWriter bw = null;
             try {//Creamos el fichero xml con la base de datos como nombre
@@ -97,43 +90,74 @@ public class BaseDatos {
                 //bw.write("<" + bbdd + ">");//Creamos el nodo padre
                 bw.newLine();
             } catch (IOException e) {
-                e.printStackTrace();
+                Consola.write("Se ha producido un error", false);
             }
 
             DatabaseMetaData dbmd = con.getMetaData();
             ResultSet rs = dbmd.getTables(bbdd, null, "%", null);
-            System.out.println("<"+bbdd+">");
+            System.out.println("<" + bbdd + ">");
             while (rs.next()) {
                 //Obtenemos las tablas
-                System.out.println("----------------------------------------------------------");
-                //System.out.println("\t<" + rs.getString("TABLE_NAME")+">");
                 tablas.add(rs.getString("TABLE_NAME"));
 
                 //Obtenemos las primarys
                 ResultSet pk = dbmd.getPrimaryKeys(bbdd, null, tablas.getLast());
                 while (pk.next()) {
-                   // System.out.println("\t\tPK: " + pk.getString("COLUMN_NAME"));
-                    primarys.add(pk.getString("COLUMN_NAME"));
+                    primarys.add(pk.getString("COLUMN_NAME"));//Añadimos la primary a la lista de pks
 
-                    Statement stm = con.createStatement();
+                    Statement stm = con.createStatement();//Creamos un statement para obtener el valor de las pks
                     ResultSet datos = stm.executeQuery("select " + primarys.getLast() + " from " + tablas.getLast() + ";");
-                    while (datos.next()) {
-                        System.out.println("\t<" + tablas.getLast()
-                                + " " + primarys.getLast() + "=" + datos.getInt(1)+">");
-                        //bw.write("<" + tablas.getLast() + " " + primarys.getLast() + "="+datos.getInt(0)+">");
-                    }
-                }
-                System.out.println("\t</" + rs.getString("TABLE_NAME")+">");
 
+                    boolean etiqueta_vacía = true;//Con este buleano controlamos cómo se muestran las etiquetas vacías
+
+                    while (datos.next()) {//Este while se repite tantas veces como primarys haya es decir por productos
+                        etiqueta_vacía = false;/*Como datos tienes al menos una columna, etiqueta vacía cambia a true
+                                                ya que tiened contenido*/
+
+                        //Mostramos la tabla con su primary y el valor de esta
+                        System.out.println("\t<" + tablas.getLast()
+                                + " " + primarys.getLast() + "=" + datos.getInt(1) + ">");
+
+                        //Preparamos un resultset para obtener la columnas
+                        ResultSet camps = dbmd.getColumns(bbdd, "%", tablas.getLast(), "%");
+                        while (camps.next()) {
+
+                            //Con este if evitamos que el campo primary se muestre dos veces
+                            if (!camps.getString(4).equals(primarys.getLast())) {
+                                campos.add(camps.getString("COLUMN_NAME"));//Añadimos el campo a la linkedlist de campos
+
+                                //Escribimos la etiqueta apertura del campo
+                                System.out.print("\t\t<" + camps.getString("COLUMN_NAME") + "> ");
+
+                                //Preparamos un statement y un resultset para obtener el contenido de los campos
+                                Statement stm_contenido = con.createStatement();
+                                ResultSet rs_contenido = stm_contenido.executeQuery("select " +
+                                        campos.getLast() + " from " + tablas.getLast() + " where " +
+                                        primarys.getLast() + "=" + datos.getInt(1) + ";");
+
+                                while (rs_contenido.next()) {//Mostramos el contenido
+                                    System.out.print(rs_contenido.getString(1).trim());
+                                }
+                                //Cerramos la etiqueta del contenido
+                                System.out.println(" </" + camps.getString("COLUMN_NAME") + ">");
+                                stm_contenido.close();//Cerramos el statement
+                            }
+                        }
+
+                        System.out.println("\t</" + tablas.getLast() + ">");
+                    }
+                    if (etiqueta_vacía) System.out.println("<" + tablas.getLast() + "/>");
+
+                    stm.close();
+                    datos.close();
+                }
             }
             System.out.println("</" + bbdd + ">");
-            //bw.write("</"+bbdd+">");//Cerramos el nodo padre
-            bw.close();//Cerramos el stream
+            if (bw != null) bw.close();//Cerramos el stream
+            rs.close();
             con.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (SQLException | IOException e) {
+            Consola.write("Se ha producido un error", false);
         }
     }
 
@@ -160,7 +184,7 @@ public class BaseDatos {
             }
             bw.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            Consola.write("Se ha producido un error", false);
         }
     }
 }

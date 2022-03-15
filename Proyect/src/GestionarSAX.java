@@ -52,8 +52,7 @@ class GestionarSAX {//Esta clase se encarga de la gestión e interpretación del
             if (showContent) Consola.write(manejador.cadenaRes, false);
         } catch (Exception e) {
             //Esta excepción salta si se produce algún error con el parseador
-            //System.out.println("Error al parsear con SAX");
-            e.printStackTrace();
+            Consola.write("Error al parsear SAX",false);
         }
     }
 }
@@ -166,7 +165,8 @@ class ManejadorSAX extends DefaultHandler {
                 }
             }
         } catch (Exception e) {
-            System.out.println("Se ha producido un error inesperado");
+            //System.out.println("Se ha producido un error inesperado");
+            e.printStackTrace();
         }
     }
 
@@ -186,28 +186,29 @@ class ManejadorSAXBD extends DefaultHandler {
 
         aperturas++;
         switch (aperturas) {
-            case 0:
+            case 0 -> {
                 nombreBD = qName;
                 BaseDatos.myStatement("create database if not exists " + nombreBD);
-                break;
-            case 1:
+            }
+            case 1 -> {
                 if (!tablas.contains(qName)) {
                     tablas.add(qName);
                     BaseDatos.myStatement("use " + nombreBD + ";");
                     BaseDatos.myStatement("create table " + qName +
-                            " ("+atts.getQName(0)+" int not null primary key);");
+                            " (" + atts.getQName(0) + " int not null primary key);");
                 }
                 claves_primarias.add(Integer.parseInt(atts.getValue(atts.getQName(0))));
                 BaseDatos.myStatement("insert into " + qName + " (id) values (" + claves_primarias.getLast() + ");");
-                break;
-            case 2:
+            }
+            case 2 -> {
                 if (!campos.contains(qName)) {
                     campos.add(qName);
                     BaseDatos.myStatement("alter table " + tablas.getLast() + " add column " + qName + " varchar(90);");
                 }
                 campo_actual = qName;
-                break;
-            default:
+            }
+            default -> {
+            }
         }
     }
 
