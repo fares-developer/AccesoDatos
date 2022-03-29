@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<DAM> 
+    <asignatura id="0"> 
+        <nombre>Acceso a datos</nombre> 
+        <profesor>Joan Femenia</profesor>
+        <horas>6</horas>
+    </asignatura> 
+    <asignatura id="1">
+        <nombre>Desarrollo de interfaces</nombre> 
+        <profesor>Jaume Rossinyol</profesor> 
+        <horas>8</horas> 
+    </asignatura> 
+    <asignatura id="2"> 
+        <nombre>Programación multimedia y dispositivos móviles</nombre> 
+        <profesor>Jaume Rossinyol</profesor> 
+        <horas>4</horas> 
+    </asignatura> 
+    <asignatura id="3"> 
+        <nombre>Programación de servicios y procesos</nombre> 
+        <profesor>Joan Femenia</profesor> 
+        <horas>4</horas> 
+    </asignatura> 
+    <asignatura id="4"> 
+        <nombre>Sistemas de gestión empresarial</nombre> 
+        <profesor>Santiago Moreno</profesor> 
+        <horas>5</horas> 
+    </asignatura> 
+    <asignatura id="5"> 
+        <nombre>Empresa e iniciativa emprendedora</nombre> 
+        <profesor>Alberto de la Varga</profesor> 
+        <horas>3</horas> 
+    </asignatura>
+</DAM> 

@@ -1,4 +1,22 @@
+
+-PARTE I COMPLETADO
+-PARTE II
+    -Ejercicio 4 => Completado
+    -Ejercicio 5 => Completado
+
+-PARTE III
+    -Ejercicio 6 => Completado
+    -Ejercicio 7 => Completado
+
+-PARTE IV
+    -Ejercicio 8 => Completado
+    -Ejercicio 9 => Completado
+    -Ejercicio 10 => Completado
+
 En esta consola queda por conseguir lo siguiente:
 
 -Revisar la salida de todos los comandos
 -En el comando lista comprobar que los números se alineen a la derecha.
+
+OBJETIVOS DE INVESTIGACIÓN PERSONAL ADQUIRIDOS EN ESTE PROYECTO
+-Investigar por qué en el método listaArbol no es lo mismo pasar un fichero que pasar un String ruta.

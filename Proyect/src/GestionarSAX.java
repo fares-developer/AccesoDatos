@@ -2,6 +2,7 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+import javax.swing.*;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import java.io.File;
@@ -34,7 +35,8 @@ class GestionarSAX {//Esta clase se encarga de la gestión e interpretación del
             } else manejador = new ManejadorSAX();
 
         } catch (Exception e) {
-            System.out.println("Error al abrir el archivo");
+            JOptionPane.showMessageDialog(null,
+                    "Error al abrir el fichero XML","Error XML",JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -52,7 +54,7 @@ class GestionarSAX {//Esta clase se encarga de la gestión e interpretación del
             if (showContent) Consola.write(manejador.cadenaRes, false);
         } catch (Exception e) {
             //Esta excepción salta si se produce algún error con el parseador
-            Consola.write("Error al parsear SAX",false);
+            Consola.write("Error al parsear SAX", false);
         }
     }
 }
@@ -134,11 +136,10 @@ class ManejadorSAX extends DefaultHandler {
     @Override
     public void endDocument() throws SAXException {
         super.endDocument();
-        if (count_nodo.equalsIgnoreCase("")) {
-            nivel = recuento;
-            recuento = 0;
-            aperturas = -1;
-        } else contador_nodo = 0;
+
+        nivel = recuento;
+        recuento = 0;
+        aperturas = -1;
     }
 
     //Este método comprueba que los argumentos introducidos por el usuario corresponden a esta instrucción
@@ -146,14 +147,14 @@ class ManejadorSAX extends DefaultHandler {
         try {
 
             if (p.size() < 3) {
-                System.out.println("Faltan argumentos");
+                Consola.write("Faltan argumentos",false);
             } else {
                 if (!p.get(1).endsWith(".xml")) {
-                    System.out.println("Error, el fichero introducido no es un xml");//Esto se muetra si no es un XML
+                    Consola.write("Error, el fichero introducido no es un xml",false);//Esto se muetra si no es un XML
 
                 } else if (!p.get(2).equals("/sinEtiquetas") && !p.get(2).equals("/conEtiquetas")) {
                     //Si el segundo argumento es diferente de con o sinEtiquetas, pide al usuario comprobar los argumentos
-                    System.out.println("Comprueba que los argumentos son correctos");
+                    Consola.write("Comprueba que los argumentos son correctos",false);
                 } else {//Si se ha llegado aquí significa que, o bien es conEtiqueta, o sinEtiqueta
 
                     if (p.get(2).equals("/sinEtiquetas")) tags = false;//Si es sinEtiquetas, tags cambia a false
@@ -165,25 +166,28 @@ class ManejadorSAX extends DefaultHandler {
                 }
             }
         } catch (Exception e) {
-            //System.out.println("Se ha producido un error inesperado");
-            e.printStackTrace();
+            JOptionPane.showMessageDialog(null,
+                    "Error al comprobar argumentos de entrada",
+                    "Error",JOptionPane.ERROR_MESSAGE);
         }
     }
 
 }
 
+//Este es el manejadorSax para los comandos que trabajan con base de datos y xml
 class ManejadorSAXBD extends DefaultHandler {
 
     static int aperturas = -1;
     static String campo_actual;
     static String nombreBD;
+    //Cada una de las siguientes listas son utilizadas para organizar el contenido de la base de datos
     static LinkedList<String> tablas = new LinkedList<>();
     static LinkedList<String> campos = new LinkedList<>();
     static LinkedList<Integer> claves_primarias = new LinkedList<>();
 
     @Override
     public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
-
+        //Cada vez que se abra una etiqueta en función del nivel en el que nos encontremos serán, raíz, hijo,nieto
         aperturas++;
         switch (aperturas) {
             case 0 -> {
@@ -220,13 +224,14 @@ class ManejadorSAXBD extends DefaultHandler {
     @Override
     public void characters(char[] ch, int start, int length) throws SAXException {
 
+        //Recogemos el contenido de las etiquetas
         if (aperturas == 2) {
-            String content = "";
+            StringBuilder content = new StringBuilder();
             for (int i = start; i < length + start; i++) {
-                content = content + (ch[i]);
+                content.append(ch[i]);
             }
             if (content.length() > 45) {
-                content = content.substring(0, 44);
+                content = new StringBuilder(content.substring(0, 44));
             }
             String sentencia = "update " + tablas.getLast()
                     + " set " + campo_actual + "='" + content + "' where id = " + claves_primarias.getLast() + ";";
@@ -235,6 +240,7 @@ class ManejadorSAXBD extends DefaultHandler {
     }
 
 
+    //Restauramos los valores de las varibales estáticas para que no se mezclen en cada vez que ejecutamos una instrucción
     public static void resetValues() {
         nombreBD = "";
         tablas.clear();

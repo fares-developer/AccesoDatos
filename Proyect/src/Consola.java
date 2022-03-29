@@ -7,18 +7,20 @@ import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Objects;
-import java.util.Scanner;
 
 /* PARA INICIAR EL COMANDO CON "ENTER" NECESITO TRABAJAR CON EVENTOS DE TECLADO, CONCRETAMENTE LA INTERFAZ
  * KEYlISTERNER O EN SU DEFECTO KEYADAPTER, PARA TRABAJAR CON EL TAMAÑO DE PANTALLA ES NECESARIO LA CLASE TOOLKIT */
 
 class Marco extends JFrame {
+    @Serial
+    private static final long serialVersionUID = 2803483458402735851L;
     lamina miLamina = new lamina();
 
     public Marco() {
         setIconImage(new ImageIcon("src/Image/edib.png").getImage());
         var ancho = Toolkit.getDefaultToolkit().getScreenSize().width;
         var alto = Toolkit.getDefaultToolkit().getScreenSize().height;
+        setMinimumSize(new Dimension(ancho/2,alto/2));
         setBounds(ancho / 4, alto / 4, ancho / 2, alto / 2);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setVisible(true);
@@ -29,6 +31,8 @@ class Marco extends JFrame {
 }
 
 class lamina extends JPanel implements KeyListener {
+    @Serial
+    private static final long serialVersionUID = 7814353185369838998L;
     JTextArea pantalla_consola;
     JTFnoEditable lanzadorComandos;
 
@@ -42,6 +46,7 @@ class lamina extends JPanel implements KeyListener {
 
         //Diseño de la pantalla de consola
         pantalla_consola.setFont(new Font("Roboto", Font.PLAIN, 14));
+        pantalla_consola.setMargin(new Insets(5,5,5,5));
         pantalla_consola.setForeground(Color.WHITE);
         pantalla_consola.setBackground(Color.BLACK);
         pantalla_consola.setCaretColor(Color.WHITE);
@@ -59,39 +64,34 @@ class lamina extends JPanel implements KeyListener {
         lanzadorComandos.setMargin(new Insets(5, 10, 5, 10));
         p.add(lanzadorComandos, BorderLayout.CENTER);
 
-        add(deslizar, BorderLayout.CENTER);
+        add(deslizar, BorderLayout.CENTER);//Añadimos el scrollpane al jpanel general
         add(p, BorderLayout.SOUTH);
-        lanzadorComandos.addKeyListener(this);
+        lanzadorComandos.addKeyListener(this);//Añadimos los eventos de teclado
     }
 
     @Override
-    public void keyTyped(KeyEvent e) {
-
-    }
+    public void keyTyped(KeyEvent e) {}
 
     @Override
     public void keyPressed(KeyEvent e) {
         if (e.getKeyCode() == KeyEvent.VK_ENTER) {
 
-            if (Consola.ruta.equals("MySQL> ")) {
+            if (Consola.ruta.equals("MySQL> ")) {//Cambiamos el prompt
                 BaseDatos.arranca(lanzadorComandos.getTextComando());
             } else {
                 Consola.arranca(lanzadorComandos.getTextComando());//Lanza el comando si se pulsa ENTER
             }
-
         }
     }
 
     @Override
-    public void keyReleased(KeyEvent e) {
-
-    }
+    public void keyReleased(KeyEvent e) {}
 }
 
 
 public class Consola {
 
-    public static Scanner entrada = new Scanner(System.in);
+    //public static Scanner entrada = new Scanner(System.in);
     public static Marco ventana = new Marco();
     public static String ruta = new File("").getAbsolutePath() + "> ";
 
@@ -194,11 +194,12 @@ public class Consola {
                 default:
                     write("Error, revise el comando", false);
             }
+
         } catch (Exception e) {
             write("Se ha producido un error", false);
         }
         showPrompt(ruta);
-        //Con la siguiente instrucción conseguimos que se haga autoscroll
+        //Con la siguiente instrucción conseguimos que se haga autoscroll en el textarea
         autoScroll(ventana.miLamina.pantalla_consola.getText().length());
         ventana.miLamina.lanzadorComandos.setTextComando("");//Limpiamos la JTextField
     }
@@ -255,8 +256,7 @@ public class Consola {
                 if (ruta_destino.exists() && ruta_destino.isFile()) {
                     /*Si el fichero de destino ya existe entonces preguntamos al usuario si quiere sobreescribirlo
                       Y en caso afirmativo le decimos que lo sobreescriba */
-                    write("El fichero ya existe, desea sobreescribirlo?(S/N)", false);
-                    String res = entrada.nextLine();//Almacenamos la respuesta del usuario
+                    String res = JOptionPane.showInputDialog("El fichero ya existe, desea sobreescribirlo?(S/N)");
 
                     if (res.equalsIgnoreCase("N")) {
                         if (!mensaje) write("No se ha movido el fichero", false);
@@ -507,11 +507,13 @@ public class Consola {
         return tamanyo;
     }
 
+    //Con este método establecemos los permisos de lectura y escritura de un fichero
     public static void setPermisos(String ruta, String permiso, boolean mensaje) {
 
-        File f = new File(ruta);
-        boolean b = true;
-        if (f.isFile()) {
+        File f = new File(ruta);//Creamos un file
+        boolean b = true;//Creamos un booleano que utilizaremos para imprimir un mensaje u otro
+
+        if (f.isFile()) {//Si f es un fichero entonces entramos porque sólo debe funcionar con ficheros
             if (permiso.equalsIgnoreCase("/s")) {
                 try {
                     b = f.setReadOnly();
@@ -526,10 +528,11 @@ public class Consola {
                 }
             }
         } else {
+            mensaje = false;//Ya que no es un fichero mostramos este mensaje
             write("Sólo se pueden modificar permisos de ficheros", false);
         }
 
-        write((b && mensaje) ? "Se ejecutado correctamente" : "No se ha podido ejecutar", false);
+        write((b && mensaje) ? "Se ha ejecutado correctamente" : "No se ha podido ejecutar", false);
 
     }
 

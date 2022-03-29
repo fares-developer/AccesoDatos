@@ -1,6 +1,7 @@
 *.txt
 .xml
 .idea/
+*.class
 *.iml
 /.idea/
 arreglos.gitignore

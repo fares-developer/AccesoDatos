@@ -1,3 +1,4 @@
+import javax.swing.*;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -18,10 +19,11 @@ class Conexion {
         String url = "jdbc:mysql://" + host + "/" + bbdd + "?serverTimezone=UTC";
         try {
             con = DriverManager.getConnection(url, user, password);
-            System.out.println("conectado");
             return con;
         } catch (SQLException e) {
-            System.out.println("Error: " + e.getMessage());
+            JOptionPane.showMessageDialog(null,
+                    "Error no se podido conectar a la base de datos",
+                    "Error BD",JOptionPane.ERROR_MESSAGE);
         }
         return con;
     }
@@ -49,11 +51,14 @@ public class BaseDatos {
             if ("modoConsola".equals(p.get(0))) {
                 Consola.ruta = new File("").getAbsolutePath() + "> ";
                 Consola.ventana.miLamina.lanzadorComandos.setParteNoEditable(Consola.ruta);
+            } else if ("salir".equals(p.get(0))) {
+                System.exit(-1);
             } else {
                 String cadena = "";
-                for (String value : p) cadena = cadena + " " + value;
-                System.out.println(cadena);
-                myStatement(cadena);
+                for (String value : p) {
+                    cadena = cadena.concat(" " + value);
+                }
+                myStatement(cadena.trim());
             }
         } catch (Exception e) {
             Consola.write("Se ha producido un error", false);
@@ -64,38 +69,70 @@ public class BaseDatos {
         Consola.ventana.miLamina.lanzadorComandos.setTextComando("");//Limpiamos la JTextField
     }
 
+    //En este método se ejecuta cualquier instrucción que le pasemos
     public static void myStatement(String n) {
 
         try {
+
             Statement stm = con.createStatement();
-            stm.executeUpdate("create database mibase;");
+            if (n.startsWith("select") || n.startsWith("show")) {
+                executeSelect(stm.executeQuery(n));
+            } else {
+                stm.executeUpdate(n);
+            }
+            Consola.write("OK ejecutado correctamente", false);
+
             stm.close();
         } catch (SQLException e) {
             Consola.write("Se ha producido un error", false);
         }
     }
 
+    static void executeSelect(ResultSet rs) {
+        try {
+            ResultSetMetaData rsmd = rs.getMetaData();
+            StringBuilder cabezeras = new StringBuilder();
+            StringBuilder filas = new StringBuilder();
+            for (int a = 1; a <= rsmd.getColumnCount(); a++) {
+                cabezeras.append("|  ").append(rsmd.getColumnName(a));
+            }
+            cabezeras.append("   |");
+            Consola.write(cabezeras + "\n", false);
+
+            while (rs.next()) {
+                for (int b = 1; b <= rsmd.getColumnCount(); b++) {
+                    filas.append("|   ").append(rs.getString(b));
+                }
+                filas.append("   |");
+                Consola.write(filas + "\n", false);
+                filas = new StringBuilder();//Volvemos a inicializar filas para que esté vacío y no se repitan los registros
+            }
+
+            rs.close();//Cerramos el stream
+
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null,
+                    "Se ha producido un error al mostrar los resultados",
+                    "Error en la Consulta", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+
     public static void crearXML(String bbdd) {
+
         LinkedList<String> tablas = new LinkedList<>();
         LinkedList<String> primarys = new LinkedList<>();
         LinkedList<String> campos = new LinkedList<>();
 
-        escribirXML(bbdd, null, "padre", null, null, null, true);
-
         try {
+            //Hacemos un use database;
+            Statement usar = con.createStatement();
+            usar.executeUpdate("use " + bbdd + ";");
 
-            BufferedWriter bw = null;
-            try {//Creamos el fichero xml con la base de datos como nombre
-                bw = new BufferedWriter(new FileWriter(bbdd + ".xml", true));
-                //bw.write("<" + bbdd + ">");//Creamos el nodo padre
-                bw.newLine();
-            } catch (IOException e) {
-                Consola.write("Se ha producido un error", false);
-            }
+            BufferedWriter bw = crearFicheroXML(bbdd);//Creamos el xml llamando al método encargado de eso
 
             DatabaseMetaData dbmd = con.getMetaData();
             ResultSet rs = dbmd.getTables(bbdd, null, "%", null);
-            System.out.println("<" + bbdd + ">");
             while (rs.next()) {
                 //Obtenemos las tablas
                 tablas.add(rs.getString("TABLE_NAME"));
@@ -108,15 +145,16 @@ public class BaseDatos {
                     Statement stm = con.createStatement();//Creamos un statement para obtener el valor de las pks
                     ResultSet datos = stm.executeQuery("select " + primarys.getLast() + " from " + tablas.getLast() + ";");
 
-                    boolean etiqueta_vacía = true;//Con este buleano controlamos cómo se muestran las etiquetas vacías
+                    boolean etiqueta_vacia = true;//Con este buleano controlamos cómo se muestran las etiquetas vacías
 
                     while (datos.next()) {//Este while se repite tantas veces como primarys haya es decir por productos
-                        etiqueta_vacía = false;/*Como datos tienes al menos una columna, etiqueta vacía cambia a true
+                        etiqueta_vacia = false;/*Como datos tienes al menos una columna, etiqueta vacía cambia a true
                                                 ya que tiened contenido*/
 
                         //Mostramos la tabla con su primary y el valor de esta
-                        System.out.println("\t<" + tablas.getLast()
-                                + " " + primarys.getLast() + "=" + datos.getInt(1) + ">");
+                        bw.write("\t<" + tablas.getLast()
+                                + " " + primarys.getLast() + "='" + datos.getString(1) + "'>");
+                        bw.newLine();
 
                         //Preparamos un resultset para obtener la columnas
                         ResultSet camps = dbmd.getColumns(bbdd, "%", tablas.getLast(), "%");
@@ -127,33 +165,36 @@ public class BaseDatos {
                                 campos.add(camps.getString("COLUMN_NAME"));//Añadimos el campo a la linkedlist de campos
 
                                 //Escribimos la etiqueta apertura del campo
-                                System.out.print("\t\t<" + camps.getString("COLUMN_NAME") + "> ");
+                                bw.write("\t\t<" + camps.getString("COLUMN_NAME") + "> ");
 
                                 //Preparamos un statement y un resultset para obtener el contenido de los campos
                                 Statement stm_contenido = con.createStatement();
                                 ResultSet rs_contenido = stm_contenido.executeQuery("select " +
                                         campos.getLast() + " from " + tablas.getLast() + " where " +
-                                        primarys.getLast() + "=" + datos.getInt(1) + ";");
+                                        primarys.getLast() + "=" + datos.getString(1) + ";");
 
                                 while (rs_contenido.next()) {//Mostramos el contenido
-                                    System.out.print(rs_contenido.getString(1).trim());
+                                    bw.write(rs_contenido.getString(1).trim());
                                 }
                                 //Cerramos la etiqueta del contenido
-                                System.out.println(" </" + camps.getString("COLUMN_NAME") + ">");
+                                bw.write(" </" + camps.getString("COLUMN_NAME") + ">");
+                                bw.newLine();
                                 stm_contenido.close();//Cerramos el statement
                             }
                         }
-
-                        System.out.println("\t</" + tablas.getLast() + ">");
+                        bw.write("\t</" + tablas.getLast() + ">");//Escribimos la etiqueta de cierre
+                        bw.newLine();//Nueva línea en el fichero
                     }
-                    if (etiqueta_vacía) System.out.println("<" + tablas.getLast() + "/>");
+                    //Mostramos la etiqueta vacía si se diera el caso
+                    if (etiqueta_vacia) bw.write("\t<" + tablas.getLast() + "/>");
+                    bw.newLine();
 
-                    stm.close();
-                    datos.close();
+                    stm.close();//Cerramos el statement
+                    datos.close();//Cerramos el resultSet
                 }
             }
-            System.out.println("</" + bbdd + ">");
-            if (bw != null) bw.close();//Cerramos el stream
+            bw.write("</" + bbdd + ">");
+            bw.close();//Cerramos el stream
             rs.close();
             con.close();
         } catch (SQLException | IOException e) {
@@ -161,30 +202,16 @@ public class BaseDatos {
         }
     }
 
-    public static void escribirXML(String fileName, String eti, String tipo, String contenido,
-                                   Integer id, String n_id, boolean apertura) {
-        try {
-            BufferedWriter bw = new BufferedWriter(new FileWriter(fileName + ".xml", true));
-            if (tipo.equalsIgnoreCase("padre")) {
-                eti = fileName;
-                if (apertura) {
-                    bw.write("<?xml version='1.0' encoding='UTF-8' standalone='no'?>");
-                    bw.newLine();
-                    bw.write("<" + eti + ">");
-                    bw.newLine();
-                } else bw.write("</" + eti + ">");
-            } else if (tipo.equalsIgnoreCase("hijo")) {
-                if (apertura) {
-                    bw.write("\t<" + eti + " " + n_id + "= '" + id + "'>");
-                } else bw.write("\t</" + eti + ">");
-                bw.newLine();
-            } else if (tipo.equalsIgnoreCase("nieto")) {
-                bw.write("\t\t<" + eti + ">" + contenido + "</" + eti + ">");
-                bw.newLine();
-            }
-            bw.close();
+    //Este método lo que hace es crear un fichero xml y escribir en él.
+    private static BufferedWriter crearFicheroXML(String bbdd) {
+        BufferedWriter bw = null;
+        try {//Creamos el fichero xml con la base de datos como nombre
+            bw = new BufferedWriter(new FileWriter(bbdd + ".xml", true));
+            bw.write("<" + bbdd + ">");//Creamos el nodo padre
+            bw.newLine();
         } catch (IOException e) {
             Consola.write("Se ha producido un error", false);
         }
+        return bw;
     }
 }

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<DAM> 
+    <asignatura id="0"></asignatura>
+    <asignatura id="1"> 
+    </asignatura>
+    <asignatura id="2">
+    </asignatura> 
+    <asignatura id="3">
+        <nombre>
+            <profe>
+                <edad>33</edad>
+            </profe>
+        </nombre>
+    </asignatura> 
+    <asignatura id="4">
+    </asignatura> 
+    <asignatura id="5">
+    </asignatura>
+</DAM> 
